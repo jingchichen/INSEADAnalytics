@@ -163,10 +163,13 @@ print(m1,'chart')
 <br>
 
 **Your Answers here:**
-<br>
-<br>
-<br>
-<br>
+<br>1) 6 factors
+<br>2) 5 yr T-Notes US, 10yr T-Notes, 0.93
+<br>3) First 10 components have the highest eigenvalue, i would call them principal factors
+<br>4a) bull_data = futures_data[as.Date(rownames(futures_data)) > “2002-11-01” & as.Date(rownames(futures_data)) < “2007-10-01”, ]
+then replace futures_data with bull_data
+<br>4b) similarly,  crisis_data = futures_data[as.Date(rownames(futures_data)) > “2007-10-01” & as.Date(rownames(futures_data)) < “2009-03-01”, ], then replace futures_data with crisis_data
+<br>5) Some futures with positive correlation in bull market might have negative correlation in bear market. And vice versa.
 
 
 <hr>
@@ -247,8 +250,8 @@ How does this compare with **existing CTA products** such as [this one from Soci
 <br>
 
 **Your Answers here:**
-<br>
-<br>
+<br>1) The code constructed a signal matrix based on the summation of signs(votes), and allocate $1 to each of the futures on a daily basis
+<br>2) The order of moving average increases (the higher the order is), the more granular the result is. More accurate.
 <br>
 <br>
 
