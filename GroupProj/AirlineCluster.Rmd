@@ -1,7 +1,7 @@
 ---
 title: Airline Cluster
-author: "Evan Chen, Leo Li, Franco Chow, Mael"
-date: "14th June 2016"
+author: "Evan Chen, Leo Li, Franco Chow, Mael Mertad"
+date: "16th June 2016"
 output: html_document
 ---
 <br>
@@ -21,13 +21,6 @@ There are seven different variables in the dataset, described below:
     FlightMiles = number of flight miles in the past 12 months
     FlightTrans = number of flight transactions in the past 12 months
     DaysSinceEnroll = number of days since enrolled in the frequent flyer program
-
-```{r echo=TRUE, eval=FALSE, tidy=TRUE}
-getwd()
-#setwd("CourseSessions/Sessions45")
-list.files()
-rm(list=ls()) # Clean up the memory, if we want to rerun from scratch
-```
 
 <hr>
 
@@ -366,57 +359,3 @@ print(m1,'chart')
 **The further a ratio is from 1, the more important that attribute is for a segment relative to the total population.**
 
 <br>
-
-#### Questions
-
-1. How many segments are there in our market? Why you chose that number of segments? Again, try a few and explain your final choice based on a) statistical arguments, b) on interpretation arguments, c) on business arguments (**you need to consider all three types of arguments**)
-2. Can you describe the segments you found based on the profiles?
-3. What if you change the number of factors and in general you *iterate the whole analysis*? **Iterations** are key in data science.
-4. Can you now answer the [Boats case questions](http://inseaddataanalytics.github.io/INSEADAnalytics/Boats-A-prerelease.pdf)? What business decisions do you recommend to this company based on your analysis?
-
-<br>
-
-**Your Answers here:**
-<br>
-<br>
-<br>
-<br>
-
-<hr>
-<hr>
-
-### Discrmininant Analysis and Scoring (New Material)
-
-We will now use the [classification methods discussed in the readings of sessions 5-6](http://inseaddataanalytics.github.io/INSEADAnalytics/Report_s67.html). Most code will be like in the [source code of that reading.](https://github.com/InseadDataAnalytics/INSEADAnalytics/blob/master/CourseSessions/Sessions67/doc/Report_s67.Rmd)
-
-We are interested in understanding the key purchase drivers for boats (a similar analysis can be done for recommendation drivers). To do so, we use the the so called **classification and scoring** methods. We will follow the process discussed in [the readings of sessions 5-6](http://inseaddataanalytics.github.io/INSEADAnalytics/Report_s67.html). 
-
-<br>
-<hr>
-
-#### Step 1: Splitting the data into estimation and validation samples
-
-
-Let's do the split of the data in *estimation*, *validation*, and *test* using these percentages of splits:
-
-```{r eval = TRUE, echo=TRUE, error = FALSE, warning=FALSE,message=FALSE,results='asis', tidy=TRUE}
-estimation_data_percent = 60
-validation_data_percent = 20
-test_data_percent = 100 - estimation_data_percent - validation_data_percent
-
-# Then just define the rows we use for each of the 3 subsets of data
-estimation_data_ids = 1:floor(estimation_data_percent*nrow(ProjectData)/100)
-non_estimation_data = setdiff(1:nrow(ProjectData),estimation_data_ids)
-validation_data_ids = (tail(estimation_data_ids,1)+1):(tail(estimation_data_ids,1) + floor(validation_data_percent/(validation_data_percent+test_data_percent)*length(non_estimation_data)))
-test_data_ids = setdiff(1:nrow(ProjectData), union(estimation_data_ids,validation_data_ids))
-```
-
-The three sets we will use are then:
-
-```{r eval = TRUE, echo=TRUE, error = FALSE, warning=FALSE,message=FALSE,results='asis'}
-estimation_data=ProjectData[estimation_data_ids,]
-validation_data=ProjectData[validation_data_ids,]
-test_data=ProjectData[test_data_ids,]
-```
-
-#### Step 2: Setting up the dependent variable
