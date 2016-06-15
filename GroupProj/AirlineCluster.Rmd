@@ -129,7 +129,7 @@ Let's now see how the "top factors" look like.
 
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
 # Choose one of these options:
-factors_selected = sum(Variance_Explained_Table_copy[,1] >= 0.7)
+factors_selected = sum(Variance_Explained_Table_copy[,1] >= 0.9)
 # minimum_variance_explained = 0.5; factors_selected = 1:head(which(Variance_Explained_Table_copy[,"cumulative percentage of variance"]>= minimum_variance_explained),1)
 #factors_selected = 10
 ```
@@ -178,26 +178,36 @@ show_data$Variables <- rownames(show_data)
 m1<-gvisTable(show_data,options=list(showRowNumber=TRUE,width=1220, height=min(400,27*(nrow(show_data)+1)),allowHTML=TRUE,page='disable'))
 print(m1,'chart')
 ```
+
+**CONCLUSION** on factors selection:   
+Considering the loadings and the eigenvalues, we will use **3 factors**.
+
 <br> <br>
 
 ### Market Segmentation
 
-Let's now use one representative question for each factor (we can also use the "factor scores" for each respondent - see [session readings](http://inseaddataanalytics.github.io/INSEADAnalytics/Report_s23.html)) to represent our survey respondents. We can choose the question with the highest absolute factor loading for each factor. For example, when we use 5 factors with the varimax rotation we can select questions Q.1.9 (I see my boat as a status symbol), Q1.18 (Boating gives me a feeling of adventure), Q1.4 (I only consider buying a boat from a reputable brand), Q1.11 (I tend to perform minor boat repairs and maintenance on my own) and Q1.2 (When buying a boat  getting the lowest price is more important than the boat brand) - try it. These are columns 10, 19, 5, 12, and 3, respectively of the data matrix `Projectdata`. 
+Let's now use the most representative question for each factor to represent our survey respondents. We choose the question with the highest absolute factor loading for each factor. Meaning:  
+Component1 : FlightMiles
+Component2 : BonusMiles
+#Component3 : DaysSinceEnrol 7
+Component3 : QualMiles
 
-In market segmentation one may use variables to **profile** the segments which are not the same (necessarily) as those used to **segment** the market: the latter may be, for example, attitude/needs related (you define segments based on what the customers "need"), while the former may be any information that allows a company to identify the defined customer segments (e.g. demographics, location, etc). Of course deciding which variables to use for segmentation and which to use for profiling (and then **activation** of the segmentation for business purposes) is largely subjective.  So in this case we will use all survey questions for profiling for now:
+These are columns 5, 3, 2 respectively of the data matrix `Projectdata`. 
+  
+Now, let's find out and profile our segments !
 
 <br>
 
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
-segmentation_attributes_used = c(2,3,5,7) 
+segmentation_attributes_used = c(2,3,5) 
 profile_attributes_used = 2:ncol(ProjectData)
 ProjectData_segment=ProjectData[,segmentation_attributes_used]
 ProjectData_profile=ProjectData[,profile_attributes_used]
 ```
 
-A key family of methods used for segmenation is what is called **clustering methods**. This is a very important problem in statistics and **machine learning**, used in all sorts of applications such as in [Amazon's pioneer work on recommender systems](http://www.cs.umd.edu/~samir/498/Amazon-Recommendations.pdf). There are many *mathematical methods* for clustering. We will use two very standard methods, **hierarchical clustering** and **k-means**. While the "math" behind all these methods can be complex, the R functions used are relatively simple to use, as we will see. 
-
-For example, to use hierarchical clustering we simply first define some parameters used (see session readings) and then simply call the command `hclust`: 
+A key family of methods is then used for segmenation, called **clustering methods**. More specifically, we use two very standard methods: **hierarchical clustering** and **k-means**.
+  
+For **hierarchical clustering**, we simply first define some parameters used and then simply call the command `hclust`: 
 
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
 # Please ENTER the distance metric eventually used for the clustering in case of hierarchical clustering 
@@ -212,6 +222,8 @@ hclust_method = "ward.D"
 numb_clusters_used = 4
 ```
 
+
+
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
 Hierarchical_Cluster_distances <- dist(ProjectData_segment, method=distance_used)
 Hierarchical_Cluster <- hclust(Hierarchical_Cluster_distances, method=hclust_method)
@@ -223,17 +235,17 @@ ProjectData_with_hclust_membership <- cbind(1:length(cluster_memberships_hclust)
 colnames(ProjectData_with_hclust_membership)<-c("Observation Number","Cluster_Membership")
 ```
 
-Finally, we can see the **dendrogram** (see class readings and online resources for more information) to have a first rough idea of what segments (clusters) we may have - and how many. 
+Finally, we can see the **dendrogram** to have a first rough idea of what segments (clusters) we may have - and how many. 
 <br>
 
 ```{r echo=FALSE, comment=NA, warning=FALSE, message=FALSE, fig.align='center', results='asis'}
 # Display dendogram
 plot(Hierarchical_Cluster, main = NULL, sub=NULL, labels = 1:nrow(ProjectData_segment), xlab="Our Observations", cex.lab=1, cex.axis=1) 
-# Draw dendogram with red borders around the 3 clusters
+# Draw dendogram with red borders around the clusters
 rect.hclust(Hierarchical_Cluster, k=numb_clusters_used, border="red") 
 ```
 <br>
-We can also plot the "distances" traveled before we need to merge any of the lower and smaller in size clusters into larger ones - the heights of the tree branches that link the clusters as we traverse the tree from its leaves to its root. If we have n observations, this plot has n-1 numbers. 
+We can also plot the "distances" traveled before we need to merge any of the lower and smaller in size clusters into larger ones - the heights of the tree branches that link the clusters as we traverse the tree from its leaves to its root. 
 <br>
 
 
@@ -245,7 +257,7 @@ print(Line,'chart')
 ```
 <br>
 
-To use k-means on the other hand one needs to define a priori the number of segments (which of course one can change and re-cluster). K-means also requires the choice of a few more parameters, but this is beyond our scope for now. Here is how to run K-means:
+Here is how we run **K-means** (N.B. after iteration, we chose to have 4 clusters/segments)
 <br>
 
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
@@ -264,14 +276,12 @@ cluster_memberships_kmeans <- kmeans_clusters$cluster
 cluster_ids_kmeans <- unique(cluster_memberships_kmeans)
 ```
 
-K-means does not provide much information about segmentation. However, when we profile the segments we can start getting a better (business) understanding of what is happening. **Profiling** is a central part of segmentation: this is where we really get to mix technical and business creativity.
+K-means does not provide much information about segmentation. However, when we profile the segments we can start getting a better (business) understanding of what is happening.  
 
 
 ### Profiling
 
-There are many ways to do the profiling of the segments. For example, here we show how the *average* answers of the respondents *in each segment* compare to the *average answer of all respondents* using the ratio of the two.  The idea is that if in a segment the average response to a question is very different (e.g. away from ratio of 1) than the overall average, then that question may indicate something about the segment relative to the total population. 
-
-Here are for example the profiles of the segments using the clusters found above: 
+Here we show how the *average* answers of the respondents *in each segment* compare to the *average answer of all respondents* using the ratio of the two.
 
 <br>
 First let's see just the average answer people gave to each question for the different segments as well as the total population:
@@ -310,12 +320,14 @@ print(m1,'chart')
 ```
 <br>
 
-Let's now see the relative ratios, which we can also save in a .csv and explore if (absolutely) necessary - e.g. for collaboration with people using other tools. 
+Let's now see the relative ratios (comparison with the population) and save *.csv data for external exploration.
 
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
-ratio_limit = 0.001
+ratio_limit = 0.1
 ```
-Let's see only ratios that are larger or smaller than 1 by, say, at least `r ratio_limit`.
+Let's see only ratios that are larger or smaller than 1 by, say, at least `r ratio_limit`.  
+If ratio <<1 : weak compared to population  
+If ratio >>1 : strong copared to population
 <br>
 
 ```{r echo=TRUE, eval=TRUE, tidy=TRUE}
@@ -353,9 +365,23 @@ show_data$Variables <- rownames(show_data)
 m1<-gvisTable(show_data,options=list(showRowNumber=TRUE,width=1220, height=min(400,27*(nrow(show_data)+1)),allowHTML=TRUE,page='disable'))
 print(m1,'chart')
 ```
+  
+      
+        
+        
+**INTERPRETATION OF THE CLUSTERS**
+
+Segment1 : The most recent members of the Flying program  
+  
+Segment2 : The oldest members of the Flying Program. MAke high value operations for both (via Bonus & Flight) transactions, which also gives them more rapidly access to TopFlight status  
+  
+Segment3 : Average duration of membership, Make average-value operations  for both (Bonus & Flight)  
+  
+Segment4 : Average duration of membership, Make essentially Bonus operations of low value, which prevents them to get access to TopFlight status  
+
 
 <br>
 <br>
-**The further a ratio is from 1, the more important that attribute is for a segment relative to the total population.**
+
 
 <br>
